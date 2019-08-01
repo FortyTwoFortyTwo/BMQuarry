@@ -4,7 +4,7 @@
 #pragma newdecls required
 
 #define MAX_SIZE	15	//15x15 func_breakable
-#define MAX_HEIGHT	13	//14 blocks underneath until reaches lava, not counting first floor with already placed blocks
+#define MAX_HEIGHT	13	//13 blocks underneath until reaches lava, not counting first floor with already placed blocks
 
 //coords to start placing blocks
 #define START_X		-896.0
@@ -35,7 +35,7 @@ public Plugin myinfo =
     author = "42",
     description = "Because making logics in hammer is garbage",
     version = "0.0.0",
-    url = "https://github.com/FortyTwoFortyTwo"
+    url = "https://github.com/FortyTwoFortyTwo/BMQuarry"
 }
 
 public void OnPluginStart()
@@ -121,12 +121,12 @@ public void OnBreakableBreak(const char[] sOutput, int iBreakable, int iActivato
 					g_iEntityRef[x][y][z] = 0;
 					
 					//Check all 6 sides, see if there spot to create
-					if (x > 0 			&& g_iGrid[x-1][y][z] == blockStatus_NotSpawned) CreateBreakable(x-1, y, z);
-					if (x < MAX_SIZE	&& g_iGrid[x+1][y][z] == blockStatus_NotSpawned) CreateBreakable(x+1, y, z);
-					if (y > 0			&& g_iGrid[x][y-1][z] == blockStatus_NotSpawned) CreateBreakable(x, y-1, z);
-					if (y < MAX_SIZE	&& g_iGrid[x][y+1][z] == blockStatus_NotSpawned) CreateBreakable(x, y+1, z);
-					if (z > 0			&& g_iGrid[x][y][z-1] == blockStatus_NotSpawned) CreateBreakable(x, y, z-1);
-					if (z < MAX_HEIGHT	&& g_iGrid[x][y][z+1] == blockStatus_NotSpawned) CreateBreakable(x, y, z+1);
+					if (x > 0 				&& g_iGrid[x-1][y][z] == blockStatus_NotSpawned) CreateBreakable(x-1, y, z);
+					if (x < MAX_SIZE-1		&& g_iGrid[x+1][y][z] == blockStatus_NotSpawned) CreateBreakable(x+1, y, z);
+					if (y > 0				&& g_iGrid[x][y-1][z] == blockStatus_NotSpawned) CreateBreakable(x, y-1, z);
+					if (y < MAX_SIZE-1		&& g_iGrid[x][y+1][z] == blockStatus_NotSpawned) CreateBreakable(x, y+1, z);
+					if (z > 0				&& g_iGrid[x][y][z-1] == blockStatus_NotSpawned) CreateBreakable(x, y, z-1);
+					if (z < MAX_HEIGHT-1	&& g_iGrid[x][y][z+1] == blockStatus_NotSpawned) CreateBreakable(x, y, z+1);
 				}
 			}
 		}
@@ -184,7 +184,7 @@ void CheckEntityMax()
 						{
 							int iBreakable = EntRefToEntIndex(g_iEntityRef[x][y][z]);
 							if (IsValidEdict(iBreakable))
-								AcceptEntityInput(iBreakable, "Break");
+								AcceptEntityInput(iBreakable, "Kill");	//Dont fire "Break" output, otherwise more powerups get spawned
 						}
 					}
 					
