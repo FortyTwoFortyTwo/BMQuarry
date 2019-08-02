@@ -15,8 +15,6 @@
 
 #define BRUSH_TEMPLATE	"spawn_template"	//point_template targetname to clone
 
-#define ENTITY_MAX	1500	//Max allowed entites in map
-
 enum blockStatus
 {
 	blockStatus_NotSpawned,
@@ -96,6 +94,8 @@ public void OnEntityCreated(int iEntity, char[] sClassname)
 				return;
 		
 		HookSingleEntityOutput(iEntity, "OnBreak", OnBreakableBreak, true);
+		
+		g_iGrid[g_iSpawnCoord[0]][g_iSpawnCoord[1]][g_iSpawnCoord[2]] = blockStatus_Spawned;
 		g_iEntityRef[g_iSpawnCoord[0]][g_iSpawnCoord[1]][g_iSpawnCoord[2]] = EntIndexToEntRef(iEntity);
 		
 		for (int i = 0; i < sizeof(g_iSpawnCoord); i++)
@@ -127,6 +127,8 @@ public void OnBreakableBreak(const char[] sOutput, int iBreakable, int iActivato
 					if (y < MAX_SIZE-1		&& g_iGrid[x][y+1][z] == blockStatus_NotSpawned) CreateBreakable(x, y+1, z);
 					if (z > 0				&& g_iGrid[x][y][z-1] == blockStatus_NotSpawned) CreateBreakable(x, y, z-1);
 					if (z < MAX_HEIGHT-1	&& g_iGrid[x][y][z+1] == blockStatus_NotSpawned) CreateBreakable(x, y, z+1);
+					
+					return;
 				}
 			}
 		}
@@ -135,9 +137,6 @@ public void OnBreakableBreak(const char[] sOutput, int iBreakable, int iActivato
 
 void CreateBreakable(int x, int y, int z)
 {
-	//Check if we not reaching entity max
-	CheckEntityMax();
-	
 	//Since we cant create brushes in Sourcemod, we clone existing brush in map using point_template and env_entity_maker
 	
 	int iEntityMaker = CreateEntityByName("env_entity_maker");
@@ -157,40 +156,6 @@ void CreateBreakable(int x, int y, int z)
 		g_iSpawnCoord[1] = y;
 		g_iSpawnCoord[2] = z;
 		AcceptEntityInput(iEntityMaker, "ForceSpawn");
-		
 		AcceptEntityInput(iEntityMaker, "Kill");
-		
-		g_iGrid[x][y][z] = blockStatus_Spawned;
-	}
-}
-
-void CheckEntityMax()
-{
-	if (ENTITY_MAX >= GetEntityCount()) return;
-	
-	//Find highest brush
-	for (int x = 0; x < MAX_SIZE; x++)
-	{
-		for (int y = 0; y < MAX_SIZE; y++)
-		{
-			for (int z = 0; z < MAX_HEIGHT; z++)
-			{
-				if (g_iGrid[x][y][z] == blockStatus_Spawned)
-				{
-					//Destroy all blocks at same height
-					for (x = 0; x < MAX_SIZE; x++)
-					{
-						for (y = 0; y < MAX_SIZE; y++)
-						{
-							int iBreakable = EntRefToEntIndex(g_iEntityRef[x][y][z]);
-							if (IsValidEdict(iBreakable))
-								AcceptEntityInput(iBreakable, "Kill");	//Dont fire "Break" output, otherwise more powerups get spawned
-						}
-					}
-					
-					return;
-				}
-			}
-		}
 	}
 }
